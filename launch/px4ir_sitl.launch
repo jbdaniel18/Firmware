@@ -12,17 +12,21 @@
     <!-- vehicle model and world -->
     <arg name="est" default="ekf2"/>
     <arg name="vehicle" default="px4ir"/>
-    <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/empty_world.world"/>
+    <!--<arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/sonoma_raceway.world"/>-->
+    <arg name="world_file_name"    default="outdoor_village" />
+    <arg name="world" default="$(find avoidance)/sim/worlds/$(arg world_file_name).world" />
     <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/px4ir_sensors/px4ir_sensors.sdf"/>
     <arg name="input" default = "/terabee_cam/depth/points" />
 
     <!-- Define a static transform from a camera internal frame to the fcu for every camera used -->
     <node pkg="tf" type="static_transform_publisher" name="tf_front_depth"
-          args="0 0 0 0 0 0 base_link realsense_cam_link 10"/>
+          args="0 0 0 -1.57 0 -1.57  camera_link realsense_cam_link 10"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_camera_link"
+          args="0 0 0 0 0 0 base_link camera_link 10"/>
     <node pkg="tf" type="static_transform_publisher" name="tf_bottom_depth"
-          args="0 0 0 0 0 0 base_link terabee_cam_link 10"/>
+          args=".05 0 -.05 0 -67.5 0 camera_link terabee_cam_link 10"/>
     <node pkg="tf" type="static_transform_publisher" name="tf_bottom_cam"
-          args="0 0 0 0 0 0 base_link baslar_cam_link 10"/>
+          args="0 0 -.04 0 -67.5 0 camera_link baslar_cam_link 10"/>
 
     <!-- gazebo configs -->
     <arg name="gui" default="false"/>
@@ -63,4 +67,19 @@
     </include>
 
     <node pkg="vision_nodelets" type="grid_filter_node" name="terabee_downsample" output="screen"/>
+
+      <!-- Launch static transform publishers -->
+      <node pkg="tf" type="static_transform_publisher" name="tf_baseLink_cameraPose"
+            args="0 0 0 0 0 0 base_link camera_pose_frame 1000"/>
+
+      <!-- Launch static transform publishers -->
+      <node pkg="tf" type="static_transform_publisher" name="tf_odom_cameraOdom"
+            args="0 0 0 0 0 0 odom camera_odom_frame 1000"/>
+
+      <arg name="input_topic" default="/rtabmap/odom"/>
+
+      <remap from="/mavros/odometry/out" to="/rtabmap/odom"/>
+      <!-- Bridge node
+      <node name="px4_realsense_bridge_node" pkg="px4_realsense_bridge" type="px4_realsense_bridge_node" output="screen" >
+      </node> -->
 </launch>

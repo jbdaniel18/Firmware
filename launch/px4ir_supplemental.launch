@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+      <!-- Bridge node -->
+      <node name="px4_realsense_bridge_node" pkg="px4_realsense_bridge" type="px4_realsense_bridge_node" output="screen" >
+      </node>
+</launch>
