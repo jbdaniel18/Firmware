@@ -77,7 +77,7 @@ ExternalProject_Add(flightgear_bridge
 set(viewers none jmavsim gazebo)
 set(debuggers none ide gdb lldb ddd valgrind callgrind)
 set(models none shell
-	if750a iris iris_dual_gps iris_opt_flow iris_opt_flow_mockup iris_vision iris_rplidar iris_irlock iris_obs_avoid iris_rtps px4vision solo typhoon_h480
+	if750a iris iris_opt_flow iris_opt_flow_mockup iris_vision iris_rplidar iris_irlock iris_obs_avoid iris_rtps px4vision solo typhoon_h480
 	px4ir px4ir_noiseless px4ir_no_gps
 	plane plane_cam plane_catapult plane_lidar
 	standard_vtol tailsitter tiltrotor
