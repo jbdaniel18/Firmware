@@ -1631,10 +1631,10 @@ Commander::run()
 
 			if (_auto_disarm_killed.get_state()) {
 				if (armed.manual_lockdown) {
-					arm_disarm(false, true, &mavlink_log_pub, "Kill-switch still engaged");
+					arm_disarm(false, true, &mavlink_log_pub, "Kill-switch still engaged, disarming");
 
 				} else {
-					arm_disarm(false, true, &mavlink_log_pub, "System in lockdown");
+					arm_disarm(false, true, &mavlink_log_pub, "System in lockdown, disarming");
 				}
 
 			}
@@ -2035,13 +2035,11 @@ Commander::run()
 			if (_manual_control_setpoint.kill_switch == manual_control_setpoint_s::SWITCH_POS_ON) {
 				/* set lockdown flag */
 				if (!armed.manual_lockdown) {
-					const char kill_switch_string[] = "Kill-switch engaged";
-
 					if (_land_detector.landed) {
-						mavlink_log_info(&mavlink_log_pub, kill_switch_string);
+						mavlink_and_console_log_info(&mavlink_log_pub, "Manual kill-switch engaged");
 
 					} else {
-						mavlink_log_critical(&mavlink_log_pub, kill_switch_string);
+						mavlink_log_critical(&mavlink_log_pub, "Manual kill-switch engaged");
 					}
 
 					_status_changed = true;
@@ -2050,7 +2048,7 @@ Commander::run()
 
 			} else if (_manual_control_setpoint.kill_switch == manual_control_setpoint_s::SWITCH_POS_OFF) {
 				if (armed.manual_lockdown) {
-					mavlink_log_info(&mavlink_log_pub, "Kill-switch disengaged");
+					mavlink_and_console_log_info(&mavlink_log_pub, "Manual kill-switch disengaged");
 					_status_changed = true;
 					armed.manual_lockdown = false;
 				}
