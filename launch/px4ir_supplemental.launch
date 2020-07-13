@@ -1,6 +1,37 @@
 <?xml version="1.0"?>
 <launch>
-      <!-- Bridge node -->
-      <node name="px4_realsense_bridge_node" pkg="px4_realsense_bridge" type="px4_realsense_bridge_node" output="screen" >
+      <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_madgwick" output="screen" respawn="false" >
+            <param name="use_mag" value="true" />
+            <param name="publish_tf" value="false" />
+            <param name="world_frame" value="nwu" />
+            <remap from="/imu/data_raw" to="/mavros/imu/data"/>
+            <remap from="/imu/data_raw" to="/mavros/imu/data"/>
+            <remap from="/imu/data" to="/rtabmap/imu"/>
+            <remap from="/imu/mag" to="/mavros/imu/mag"/>
       </node>
+
+  <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry" respawn="false" >
+    <param name="approx_sync" value="false" />
+    <param name="frame_id" value="base_link" />
+    <remap from="depth/image" to="/realsense_cam/depth/image_raw"/>
+    <remap from="rgb/image" to="/realsense_cam/rgb/image_raw"/>
+    <remap from="rgb/camera_info" to="/realsense_cam/rgb/camera_info"/>
+    <remap from="odom" to="/mavros/odometry/out"/>
+ </node>
+
+    <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+        <arg name="rtabmap_args" value="--delete_db_on_start --Optimizer/GravitySigma 0.3"/>
+        <arg name="depth_topic" value="/realsense_cam/depth/image_raw"/>
+        <arg name="rgb_topic" value="/realsense_cam/rgb/image_raw"/>
+        <arg name="camera_info_topic" value="/realsense_cam/rgb/camera_info"/>
+        <arg name="approx_sync" value="false"/>
+        <arg name="imu_topic" value="/rtabmap/imu"/>
+        <arg name="frame_id" value="base_link"/>
+        <arg name="publish_tf_map" value="true"/>
+        <arg name="visual_odometry" value="false"/>
+        <arg name="odom_topic" value="/mavros/odometry/out"/>
+        <arg name="rviz" value="true"/>
+        <arg name="rtabmapviz" value="false"/>
+
+    </include>
 </launch>

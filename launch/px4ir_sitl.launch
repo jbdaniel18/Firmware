@@ -29,7 +29,7 @@
           args="0 0 -.04 0 -67.5 0 camera_link baslar_cam_link 10"/>
 
     <!-- gazebo configs -->
-    <arg name="gui" default="false"/>
+    <arg name="gui" default="true"/>
     <arg name="debug" default="false"/>
     <arg name="verbose" default="false"/>
     <arg name="paused" default="false"/>
@@ -76,10 +76,4 @@
       <node pkg="tf" type="static_transform_publisher" name="tf_odom_cameraOdom"
             args="0 0 0 0 0 0 odom camera_odom_frame 1000"/>
 
-      <arg name="input_topic" default="/rtabmap/odom"/>
-
-      <remap from="/mavros/odometry/out" to="/rtabmap/odom"/>
-      <!-- Bridge node
-      <node name="px4_realsense_bridge_node" pkg="px4_realsense_bridge" type="px4_realsense_bridge_node" output="screen" >
-      </node> -->
 </launch>
