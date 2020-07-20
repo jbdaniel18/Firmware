@@ -9,5 +9,21 @@
 
 sh /etc/init.d/rc.mc_defaults
 
+if [ $AUTOCNF = yes ]
+then
+	# Fuse in vision position and yaw
+	param set EKF2_AID_MASK 24
+	# Use vision for height
+	param set EKF2_HGT_MODE 3
+	# Use the range sensor
+	param set EKF2_RNG_AID 1
+
+	param set MAV_ODOM_LP 1
+	param set MAV_USEHILGPS 1
+	param set EKF2_EV_POS_X .1
+	param set EKF2_EV_DELAY 85
+	param set COM_POS_FS_DELAY 10
+fi
+
 set MIXER quad_w
 

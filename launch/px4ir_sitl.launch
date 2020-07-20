@@ -2,7 +2,7 @@
 <launch>
     <!-- MAVROS posix SITL environment launch script -->
     <!-- launches MAVROS, PX4 SITL, Gazebo environment, and spawns vehicle -->
-    <!-- vehicle pose -->
+    <!-- vehicle pose in Gazebo -->
     <arg name="x" default="0"/>
     <arg name="y" default="0"/>
     <arg name="z" default="0"/>
@@ -10,13 +10,25 @@
     <arg name="P" default="0"/>
     <arg name="Y" default="0"/>
     <!-- vehicle model and world -->
+    <!-- Change the State Estimator ie EKF-->
     <arg name="est" default="ekf2"/>
+    <!-- It's a little unclear what this arg does, but I think it selects which firmware params it loads and saves to -->
+    <!-- so when it's set to px4ir it will use the params built based on configs in /ROMFS/init.d-posix/20001_px4ir -->
+    <!-- and saves the file to ~/.ros/eeprom-->
+    <!-- Although when I rebooted and let it auto generate the config the parameter height mode acted like it was wrong-->
     <arg name="vehicle" default="px4ir"/>
+
+    <!-- This one is most accurate to a place in real world, but is resource intensive-->
     <!--<arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/sonoma_raceway.world"/>-->
+
+    <!-- Empty world with no obstacles-->
+    <!--<arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/empty.world"/> -->
+
+    <!-- Small 3D City -->
     <arg name="world_file_name"    default="outdoor_village" />
     <arg name="world" default="$(find avoidance)/sim/worlds/$(arg world_file_name).world" />
+    <!-- Pick your craft that you want to launch -->
     <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/px4ir_sensors/px4ir_sensors.sdf"/>
-    <arg name="input" default = "/terabee_cam/depth/points" />
 
     <!-- Define a static transform from a camera internal frame to the fcu for every camera used -->
     <node pkg="tf" type="static_transform_publisher" name="tf_front_depth"
@@ -24,12 +36,12 @@
     <node pkg="tf" type="static_transform_publisher" name="tf_camera_link"
           args="0 0 0 0 0 0 base_link camera_link 10"/>
     <node pkg="tf" type="static_transform_publisher" name="tf_bottom_depth"
-          args=".05 0 -.05 0 -67.5 0 camera_link terabee_cam_link 10"/>
+          args="0 0 0 0 3.14 0 camera_link terabee_cam_link 10"/>
     <node pkg="tf" type="static_transform_publisher" name="tf_bottom_cam"
-          args="0 0 -.04 0 -67.5 0 camera_link baslar_cam_link 10"/>
+          args="0 0 0 0 3.14 0 camera_link baslar_cam_link 10"/>
 
     <!-- gazebo configs -->
-    <arg name="gui" default="true"/>
+    <arg name="gui" default="false"/> <!-- Disables or Enables Gazebo GUI, Disable for better performance-->
     <arg name="debug" default="false"/>
     <arg name="verbose" default="false"/>
     <arg name="paused" default="false"/>
@@ -66,14 +78,10 @@
         <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
     </include>
 
+      <!-- To simulate the terrabee, only use /teraranger_evo_64px/point_cloud-->
     <node pkg="vision_nodelets" type="grid_filter_node" name="terabee_downsample" output="screen"/>
 
-      <!-- Launch static transform publishers -->
-      <node pkg="tf" type="static_transform_publisher" name="tf_baseLink_cameraPose"
-            args="0 0 0 0 0 0 base_link camera_pose_frame 1000"/>
-
-      <!-- Launch static transform publishers -->
-      <node pkg="tf" type="static_transform_publisher" name="tf_odom_cameraOdom"
-            args="0 0 0 0 0 0 odom camera_odom_frame 1000"/>
+      <!-- Mavros wants a range message so we average across the 64 points to produce a guess depth-->
+    <node pkg="vision_nodelets" type="pcl2_to_range_node" name="pointcloud2range" output="screen"/>
 
 </launch>
