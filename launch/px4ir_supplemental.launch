@@ -1,38 +1,65 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="use_sim" default="false"/>
+    <arg name="use_mavros" default="true"/>
+
+
+    <arg if="$(arg use_mavros)" name="imu_topic" value="/mavros/imu/data" />
+    <arg  if="$(arg use_mavros)" name="use_mag" value="true" />
+
+    <arg unless="$(arg use_mavros)" name="imu_topic" value="/camera/imu" />
+    <arg unless="$(arg use_mavros)" name="use_mag" value="false"/>
+
+    <group unless="$(arg use_sim)">
+        <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
+            <arg name="align_depth" value="true" />
+            <arg name="unite_imu_method" value="linear_interpolation" />
+            <arg name="enable_infra1" value="false" />
+            <arg name="enable_infra2" value="false" />
+            <arg name="depth_fps" value="90" />
+            <arg name="color_fps" value="30" />
+            <arg name="filters" value="pointcloud" />
+        </include>
+    </group>
+
       <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_madgwick" output="screen" respawn="false" >
-            <param name="use_mag" value="true" />
+            <param name="use_mag" value="$(arg use_mag)" />
             <param name="publish_tf" value="false" />
-            <param name="remove_gravity_vector" value="true" />
+            <param name="remove_gravity_vector" value="false" />
             <param name="world_frame" value="enu" />
             <remap from="/imu/data_raw" to="/mavros/imu/data"/>
-            <remap from="/imu/data" to="/rtabmap/imu"/>
+            <remap from="/imu/data" to="$(arg imu_topic)"/>
             <remap from="/imu/mag" to="/mavros/imu/mag"/>
       </node>
 
     <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry" output="screen" respawn="false"  >
+        <param name="Odom/Strategy " value="1"/>
+        <param name="Odom/ResetCountdown" value="0"/>
         <param name="rtabmap_args" value="--Odom/Strategy 1"/>
         <param name="approx_sync" value="false" />
-        <param name="frame_id" value="base_link" />
+        <param name="frame_id" value="camera_link" />
         <remap from="depth/image" to="/camera/depth/image_rect_raw"/>
         <remap from="rgb/image" to="/camera/color/image_raw"/>
         <remap from="rgb/camera_info" to="/camera/color/camera_info"/>
+       <!-- <remap from="odom" to="/mavros/odometry/out"/> -->
         <remap from="odom" to="/mavros/odometry/out"/>
+
  </node>
 
     <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
-        <arg name="rtabmap_args" value="--delete_db_on_start --Optimizer/GravitySigma 0.3 --RGBD/OptimizeFromGraphEnd true"/>
+        <arg name="rtabmap_args" value="--delete_db_on_start --Optimizer/GravitySigma 0.3 --RGBD/OptimizeFromGraphEnd true --Rtabmap/StartNewMapOnLoopClosure false"/>
         <arg name="depth_topic" value="/camera/depth/image_rect_raw"/>
         <arg name="rgb_topic" value="/camera/color/image_raw"/>
         <arg name="camera_info_topic" value="/camera/color/camera_info"/>
         <arg name="approx_sync" value="false"/>
         <arg name="imu_topic" value="/rtabmap/imu"/>
-        <arg name="frame_id" value="base_link"/>
+        <arg name="frame_id" value="camera_link"/>
         <arg name="publish_tf_map" value="true"/>
         <arg name="visual_odometry" value="false"/>
-         <arg name="odom_topic" value="/mavros/odometry/out"/>
-        <arg name="rviz" value="true"/>
-        <arg name="rtabmapviz" value="false"/>
+        <!-- <arg name="odom_topic" value="/mavros/odometry/out"/> -->
+        <arg name="odom_topic" value="/mavros/odometry/out"/>
+        <arg name="rviz" value="false"/>
+        <arg name="rtabmapviz" value="true"/>
         <arg name="rviz_cfg" value="$(find px4)/launch/config/rgbd.rviz"/>
     </include>
 </launch>
